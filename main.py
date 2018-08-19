@@ -5,37 +5,51 @@ from selenium import webdriver
 from lxml import etree
 
 
-def crawl(root_url, driver):
+def crawl():
+    driver = webdriver.Firefox(executable_path='./geckodriver/geckodriver.exe') #Open WebDriver
+    url_dict = urls().geturls()
     row_index = 1
     xpath_first_page = "/html/body/table/tbody/tr/td[1]/table/tbody/tr[11]/td/div/a"
-    x_path_other_pages = "/html/body/table/tbody/tr/td[1]/table/tbody/tr[11]/td/div/b/font/a"
+    xpath_other_pages = "/html/body/table/tbody/tr/td[1]/table/tbody/tr[11]/td/div/b/font/a"
     workbook = xlsxwriter.Workbook('teste.xlsx')
     worksheet = workbook.add_worksheet()
     put_excel_headers(worksheet)
 
-    driver.get(root_url)
-    try:
-        element = driver.find_element_by_xpath(xpath_first_page)
-        tree = lxml.html.fromstring(driver.page_source)
-        current_questions = get_content(tree)
-        save_in_excel(row_index, current_questions, worksheet)
-        row_index += len(current_questions)
-        element.click()
-    except Exception:
-        driver.close()
-        workbook.close()
-
-    while True:
+    for key in url_dict.keys():
+        tag = key
+        driver.get(url_dict[key])
         try:
-            element = driver.find_element_by_xpath(x_path_other_pages)
             tree = lxml.html.fromstring(driver.page_source)
-            questions = get_content(tree)
-            save_in_excel(row_index, questions, worksheet)
-            row_index += len(questions)
+            current_questions = get_content(tree)
+            number_of_pages = get_number_of_pages(tree)
+            save_in_excel(row_index, tag, current_questions, worksheet)
+            row_index += len(current_questions)
+            element = driver.find_element_by_xpath(xpath_first_page)
             element.click()
+
+            for index in range(2, number_of_pages):
+                element = driver.find_element_by_xpath(xpath_other_pages)
+                tree = lxml.html.fromstring(driver.page_source)
+                questions = get_content(tree)
+                save_in_excel(row_index, tag, questions, worksheet)
+                row_index += len(questions)
+                element.click()
+
         except Exception:
-            driver.close()
-            workbook.close()
+            print("Erro, mas continua ai!")
+
+    driver.close()
+    workbook.close()
+
+
+
+
+def get_number_of_pages(tree):
+    xpath_qtd_pages = "/html/body/table/tbody/tr/td[1]/table/tbody/tr[11]/td/div/font"
+    qtd_pages_element = tree.xpath(xpath_qtd_pages)
+    trim_data = (qtd_pages_element[0].text).strip(" ")
+    total_of_pages = trim_data[-2:]
+    return int(total_of_pages)
 
 
 def get_content(tree):
@@ -110,24 +124,25 @@ def format(question):
     })
 
 def put_excel_headers(worksheet):
-    worksheet.write(0, 0, 'questao')
-    worksheet.write(0, 1, 'opcao1')
-    worksheet.write(0, 2, 'opcao2')
-    worksheet.write(0, 3, 'opcao3')
-    worksheet.write(0, 4, 'opcao4')
-    worksheet.write(0, 5, 'opcaoCorreta')
+    worksheet.write(0, 0, 'tag')
+    worksheet.write(0, 1, 'questao')
+    worksheet.write(0, 2, 'opcao1')
+    worksheet.write(0, 3, 'opcao2')
+    worksheet.write(0, 4, 'opcao3')
+    worksheet.write(0, 5, 'opcao4')
+    worksheet.write(0, 6, 'opcaoCorreta')
 
 
-def save_in_excel(row_index, questions, worksheet):
+def save_in_excel(row_index, tag, questions, worksheet):
     for question in questions:
-        worksheet.write(row_index, 0, question['questao'])
-        worksheet.write(row_index, 1, question['opcao1'])
-        worksheet.write(row_index, 2, question['opcao2'])
-        worksheet.write(row_index, 3, question['opcao3'])
-        worksheet.write(row_index, 4, question['opcao4'])
-        worksheet.write(row_index, 5, question['opcaoCorreta'])
+        worksheet.write(row_index, 0, tag)
+        worksheet.write(row_index, 1, question['questao'])
+        worksheet.write(row_index, 2, question['opcao1'])
+        worksheet.write(row_index, 3, question['opcao2'])
+        worksheet.write(row_index, 4, question['opcao3'])
+        worksheet.write(row_index, 5, question['opcao4'])
+        worksheet.write(row_index, 6, question['opcaoCorreta'])
         row_index += 1
 
-driver = webdriver.Firefox(executable_path='./geckodriver/geckodriver.exe') #Open WebDriver
-url_dict = urls().geturls()
-crawl(url_dict["adjetivos"], driver)
+
+crawl()

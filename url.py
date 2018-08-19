@@ -1,9 +1,9 @@
 class urls:
     def geturls(self):
         return {
+            "artigos": "http://www.professor.bio.br/ingles/provas_questoes.asp?section=Artigos",
             "adjetivos": "http://www.professor.bio.br/ingles/provas_questoes.asp?section=Adjetivos",
             "adverbios": "http://www.professor.bio.br/ingles/provas_questoes.asp?section=Adverbios",
-            "artigos": "http://www.professor.bio.br/ingles/provas_questoes.asp?section=Artigos",
             "conjuncao": "http://www.professor.bio.br/ingles/provas_questoes.asp?section=Conjuncao",
             "construcao-palavra": "http://www.professor.bio.br/ingles/provas_questoes.asp?section=construcao-palavra",
             "falsoscognatos": "http://www.professor.bio.br/ingles/provas_questoes.asp?section=falsoscognatos",
