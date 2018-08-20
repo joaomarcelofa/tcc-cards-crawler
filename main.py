@@ -7,7 +7,7 @@ from lxml import etree
 
 def crawl():
     driver = webdriver.Firefox(executable_path='./geckodriver/geckodriver.exe') #Open WebDriver
-    url_dict = urls().geturls()
+    url_dict = urls().get_urls()
     row_index = 1
     xpath_first_page = "/html/body/table/tbody/tr/td[1]/table/tbody/tr[11]/td/div/a"
     xpath_other_pages = "/html/body/table/tbody/tr/td[1]/table/tbody/tr[11]/td/div/b/font/a"
@@ -54,10 +54,9 @@ def get_number_of_pages(tree):
 
 def get_content(tree):
     etree.strip_tags(tree, 'br')
-    tableIterator = [2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13]
     questions = []
 
-    for iterator in tableIterator:
+    for iterator in range(2, 13):
         current_xpath = f'/html/body/table/tbody/tr/td[1]/table/tbody/tr[8]/td/table/tbody/tr[{iterator}]/td[2]/font/font/text()'
         data_extracted = tree.xpath(current_xpath)
         current_question = []
@@ -73,12 +72,29 @@ def get_content(tree):
     return questions
 
 
+def get_questions_in_one_line(text):
+    text += ' !)'
+    index_of_parenthesis = []
+    alternatives = []
+    for index, char in enumerate(text):
+        if char is ')':
+            index_of_parenthesis.append(index - 1)
+
+    alternatives_length = len(index_of_parenthesis)
+    for index in range(0, alternatives_length - 1):
+        alternatives.append(text[index_of_parenthesis[index]: (index_of_parenthesis[index+1] - 1)])
+    return alternatives
+
+
 def process_data(data):
     list_len: int = len(data)
-    if len(data[list_len - 1]) is 3 and (list_len is 6 or list_len is 7):
+    if len(data[list_len - 1]) is 3 and (list_len is 6 or list_len is 7 or list_len is 3):
         question: str = data[0]
         correct_answer = data[(list_len - 1)]
-        alternatives = data[1:-1]
+        if list_len is 3:
+            alternatives = get_questions_in_one_line(data[1])
+        else:
+            alternatives = data[1:-1]
 
         return dict({
             'question': question,

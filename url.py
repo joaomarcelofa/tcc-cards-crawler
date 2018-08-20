@@ -1,5 +1,5 @@
 class urls:
-    def geturls(self):
+    def get_urls(self):
         return {
             "artigos": "http://www.professor.bio.br/ingles/provas_questoes.asp?section=Artigos",
             "adjetivos": "http://www.professor.bio.br/ingles/provas_questoes.asp?section=Adjetivos",
